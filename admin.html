@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#05070d">
+<title>Anime Hub — Admin Panel</title>
+<style>
+:root{--bg:#05070d;--panel:#0b111c;--panel2:#101827;--line:#233148;--text:#f5f7fb;--muted:#9aa8bd;--blue:#4f8cff;--red:#ff4f70;--green:#22c55e;--danger:#ef4444}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Arial,sans-serif;background:radial-gradient(circle at 15% 0%,#101d35 0,#070b13 42%,#05070d 100%);color:var(--text);min-height:100vh}button,input,textarea,select{font:inherit}button{cursor:pointer}.hidden{display:none!important}
+.wrap{max-width:1200px;margin:auto;padding:20px}.top{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:18px}.brand{font-size:24px;font-weight:900;letter-spacing:.5px}.brand span{color:#63a0ff}.adminTag{font-size:11px;color:#aebbd0;margin-left:7px}
+.btn{background:var(--blue);color:#fff;border:0;padding:11px 15px;border-radius:10px;font-weight:800}.btn.secondary{background:#172235}.btn.danger{background:var(--danger)}.btn.green{background:var(--green);color:#03130a}.btn:disabled{opacity:.55;cursor:not-allowed}
+.card{background:rgba(11,17,28,.94);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 14px 38px rgba(0,0,0,.25)}
+.login{max-width:450px;margin:10vh auto}.login h1{margin:8px 0}.small{font-size:12px;color:var(--muted);line-height:1.55}.field{margin:12px 0}.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}.field input,.field textarea,.field select{width:100%;padding:11px 12px;border-radius:10px;border:1px solid var(--line);background:#070d17;color:var(--text);outline:none}.field textarea{min-height:95px;resize:vertical}.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--blue)}
+.msg{margin-top:11px;padding:11px 12px;border-radius:10px;background:#111d2e;color:#c8d7eb;font-size:13px;line-height:1.5}.msg.err{background:#30141a;color:#fecaca}.msg.ok{background:#0c2819;color:#bbf7d0}.msg.warn{background:#2a2110;color:#fde68a}
+.connection{margin-top:12px;padding:11px 12px;border:1px dashed #31445f;border-radius:11px;font-size:12px;color:var(--muted)}.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#64748b;margin-right:7px}.dot.ok{background:var(--green)}.dot.bad{background:var(--red)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:16px}.stat{padding:15px;border-radius:14px;background:rgba(16,24,39,.9);border:1px solid var(--line)}.stat span{display:block;color:var(--muted);font-size:12px}.stat b{display:block;font-size:27px;margin-top:5px}
+.tabs{display:flex;gap:8px;overflow:auto;margin-bottom:15px}.tab{padding:10px 14px;background:#101a29;color:#9fb0c6;border:0;border-radius:10px;white-space:nowrap;font-weight:700}.tab.active{background:var(--blue);color:#fff}.section{display:none}.section.active{display:block}.row{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px}.actions{display:flex;gap:7px;flex-wrap:wrap}
+.tablewrap{overflow:auto}.table{width:100%;border-collapse:collapse;min-width:800px}.table th,.table td{text-align:left;padding:11px;border-bottom:1px solid var(--line);vertical-align:top}.table th{font-size:11px;color:var(--muted)}.pill{display:inline-block;padding:4px 8px;border-radius:99px;background:#162236;font-size:11px}.pill.ok{background:#0d2b1b;color:#86efac}.pill.off{background:#2b1820;color:#fda4af}.empty{padding:25px;text-align:center;color:var(--muted)}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.76);display:none;align-items:center;justify-content:center;padding:16px;z-index:50}.modal.show{display:flex}.modalbox{width:min(680px,100%);max-height:92vh;overflow:auto}.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}.footer{text-align:center;color:#65778e;font-size:12px;margin:24px 0 4px}.notice{padding:12px;border:1px dashed #2d405b;border-radius:12px;color:var(--muted);font-size:12px;line-height:1.55}
+@media(max-width:800px){.stats{grid-template-columns:1fr 1fr}.two{grid-template-columns:1fr}.top{align-items:flex-start;flex-direction:column}.wrap{padding:13px}.login{margin:5vh auto}}
+</style>
+</head>
+<body>
+<div id="loginView" class="wrap">
+  <div class="card login">
+    <div class="brand">ANIME <span>HUB</span><span class="adminTag">ADMIN</span></div>
+    <h1>Admin Login</h1>
+    <p class="small">Sign in with the Supabase account that has been added to <b>public.admins</b>.</p>
+    <form id="loginForm">
+      <div class="field"><label>Email</label><input id="email" type="email" required autocomplete="username"></div>
+      <div class="field"><label>Password</label><input id="password" type="password" required autocomplete="current-password"></div>
+      <button id="loginBtn" class="btn" style="width:100%">Login</button>
+    </form>
+    <div id="loginMsg"></div>
+    <div id="connection" class="connection"><span class="dot"></span>Checking Supabase connection…</div>
+    <p class="small" style="margin-top:12px">Open this page from GitHub Pages, not a <code>content://</code> local file URL.</p>
+  </div>
+</div>
+
+<div id="appView" class="hidden">
+<div class="wrap">
+  <div class="top">
+    <div><div class="brand">ANIME <span>HUB</span><span class="adminTag">ADMIN</span></div><div id="who" class="small"></div></div>
+    <button id="logoutBtn" class="btn secondary">Logout</button>
+  </div>
+  <div id="appMsg"></div>
+  <div class="stats">
+    <div class="stat"><span>Anime</span><b id="statAnime">0</b></div>
+    <div class="stat"><span>Seasons</span><b id="statSeasons">0</b></div>
+    <div class="stat"><span>Episodes</span><b id="statEpisodes">0</b></div>
+    <div class="stat"><span>Published</span><b id="statPublished">0</b></div>
+  </div>
+  <div class="tabs">
+    <button class="tab active" data-tab="dashboard">Dashboard</button>
+    <button class="tab" data-tab="anime">Anime</button>
+    <button class="tab" data-tab="seasons">Seasons</button>
+    <button class="tab" data-tab="episodes">Episodes</button>
+  </div>
+
+  <section id="dashboard" class="section active card">
+    <h2 style="margin-top:0">Dashboard</h2>
+    <p class="small">Manage anime, seasons and authorized episode sources here. Only media you own or are authorized to stream should be added.</p>
+    <div class="notice">The browser uses the Supabase <b>publishable</b> key. No secret/service-role key is included in this project.</div>
+  </section>
+
+  <section id="anime" class="section card">
+    <div class="row"><div><h2 style="margin:0">Anime</h2><div class="small">Add or edit anime information.</div></div><button class="btn" onclick="openAnime()">+ Add Anime</button></div>
+    <div class="tablewrap"><table class="table"><thead><tr><th>ID</th><th>Title</th><th>Status</th><th>Media</th><th>Actions</th></tr></thead><tbody id="animeRows"></tbody></table></div>
+  </section>
+
+  <section id="seasons" class="section card">
+    <div class="row"><div><h2 style="margin:0">Seasons</h2><div class="small">Connect seasons to an anime.</div></div><button class="btn" onclick="openSeason()">+ Add Season</button></div>
+    <div class="tablewrap"><table class="table"><thead><tr><th>ID</th><th>Anime</th><th>Season</th><th>Title</th><th>Actions</th></tr></thead><tbody id="seasonRows"></tbody></table></div>
+  </section>
+
+  <section id="episodes" class="section card">
+    <div class="row"><div><h2 style="margin:0">Episodes</h2><div class="small">Add episode metadata and an authorized video URL.</div></div><button class="btn" onclick="openEpisode()">+ Add Episode</button></div>
+    <div class="tablewrap"><table class="table"><thead><tr><th>ID</th><th>Anime / Season</th><th>Episode</th><th>Title</th><th>Status</th><th>Actions</th></tr></thead><tbody id="episodeRows"></tbody></table></div>
+  </section>
+  <div class="footer">Anime Hub Admin Panel • GitHub Pages + Supabase</div>
+</div></div>
+
+<div id="modal" class="modal"><div class="card modalbox"><div class="row"><h2 id="modalTitle" style="margin:0">Form</h2><button class="btn secondary" onclick="closeModal()">✕</button></div><div id="modalBody"></div></div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script>
+const {createClient}=supabase;
+const db=createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+let animeList=[],seasonList=[],episodeList=[];
+const $=id=>document.getElementById(id);
+function esc(v=''){return String(v).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
+function msg(target,text,type=''){ $(target).innerHTML=text?`<div class="msg ${type}">${esc(text)}</div>`:''; }
+function closeModal(){$('modal').classList.remove('show')}
+function showModal(title,body){$('modalTitle').textContent=title;$('modalBody').innerHTML=body;$('modal').classList.add('show')}
+function setConnection(ok,text){$('connection').innerHTML=`<span class="dot ${ok?'ok':'bad'}"></span>${esc(text)}`}
+async function checkConnection(){try{const r=await fetch(SUPABASE_URL+'/auth/v1/settings',{headers:{apikey:SUPABASE_PUBLISHABLE_KEY},cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);setConnection(true,'Supabase connection is reachable.')}catch(e){setConnection(false,'Cannot reach Supabase. If this page is opened as content://, deploy it to GitHub Pages first.')} }
+async function currentAdmin(){const {data:{user},error}=await db.auth.getUser();if(error||!user)return null;const {data,error:adminError}=await db.from('admins').select('id,email,role').eq('id',user.id).maybeSingle();if(adminError)throw adminError;if(!data)return null;return user}
+async function boot(){try{const user=await currentAdmin();if(user){$('loginView').classList.add('hidden');$('appView').classList.remove('hidden');$('who').textContent='Signed in as '+user.email;await loadAll()}else{$('loginView').classList.remove('hidden');$('appView').classList.add('hidden')}}catch(e){$('loginView').classList.remove('hidden');$('appView').classList.add('hidden');msg('loginMsg',e.message||'Unable to verify admin account.','err')}}
+$('loginForm').addEventListener('submit',async e=>{e.preventDefault();$('loginBtn').disabled=true;msg('loginMsg','Signing in…');try{const {error}=await db.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});if(error)throw error;await boot();if(!$('appView').classList.contains('hidden'))msg('loginMsg','')}catch(e){msg('loginMsg',e.message||'Login failed.','err')}finally{$('loginBtn').disabled=false}});
+$('logoutBtn').onclick=async()=>{await db.auth.signOut();location.reload()};
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.section').forEach(x=>x.classList.remove('active'));b.classList.add('active');$(b.dataset.tab).classList.add('active')});
+async function loadAll(){msg('appMsg','Loading…');try{const [a,s,e]=await Promise.all([db.from('anime').select('*').order('id',{ascending:false}),db.from('seasons').select('*,anime(title)').order('id',{ascending:false}),db.from('episodes').select('*,anime(title),seasons(season_number,title)').order('id',{ascending:false})]);if(a.error)throw a.error;if(s.error)throw s.error;if(e.error)throw e.error;animeList=a.data||[];seasonList=s.data||[];episodeList=e.data||[];render();msg('appMsg','')}catch(e){msg('appMsg',e.message||'Could not load data. Check your RLS policies and Data API permissions.','err')}}
+function render(){$('statAnime').textContent=animeList.length;$('statSeasons').textContent=seasonList.length;$('statEpisodes').textContent=episodeList.length;$('statPublished').textContent=episodeList.filter(x=>x.published).length;
+$('animeRows').innerHTML=animeList.map(x=>`<tr><td>${esc(x.id)}</td><td><b>${esc(x.title)}</b><div class="small">${esc(x.description||'').slice(0,90)}</div></td><td>${esc(x.status||'')}</td><td>${x.thumbnail_url?'<span class="pill">Thumbnail</span> ':''}${x.banner_url?'<span class="pill">Banner</span>':''}</td><td><div class="actions"><button class="btn secondary" onclick="openAnime(${x.id})">Edit</button><button class="btn danger" onclick="delAnime(${x.id})">Delete</button></div></td></tr>`).join('')||'<tr><td colspan="5" class="empty">No anime yet.</td></tr>';
+$('seasonRows').innerHTML=seasonList.map(x=>`<tr><td>${esc(x.id)}</td><td>${esc(x.anime?.title||'')}</td><td>${esc(x.season_number)}</td><td>${esc(x.title||'')}</td><td><div class="actions"><button class="btn secondary" onclick="openSeason(${x.id})">Edit</button><button class="btn danger" onclick="delSeason(${x.id})">Delete</button></div></td></tr>`).join('')||'<tr><td colspan="5" class="empty">No seasons yet.</td></tr>';
+$('episodeRows').innerHTML=episodeList.map(x=>`<tr><td>${esc(x.id)}</td><td>${esc(x.anime?.title||'')}<div class="small">S${esc(x.seasons?.season_number||'?')} ${esc(x.seasons?.title||'')}</div></td><td>${esc(x.episode_number)}</td><td>${esc(x.title||'')}</td><td>${x.published?'<span class="pill ok">Published</span>':'<span class="pill off">Draft</span>'}</td><td><div class="actions"><button class="btn secondary" onclick="openEpisode(${x.id})">Edit</button><button class="btn danger" onclick="delEpisode(${x.id})">Delete</button></div></td></tr>`).join('')||'<tr><td colspan="6" class="empty">No episodes yet.</td></tr>'}
+function animeOptions(selected){return animeList.map(x=>`<option value="${esc(x.id)}" ${String(x.id)===String(selected)?'selected':''}>${esc(x.title)}</option>`).join('')}
+function seasonOptions(animeId,selected){return seasonList.filter(x=>String(x.anime_id)===String(animeId)).map(x=>`<option value="${esc(x.id)}" ${String(x.id)===String(selected)?'selected':''}>S${esc(x.season_number)} — ${esc(x.title||'')}</option>`).join('')}
+function openAnime(id){const x=animeList.find(a=>a.id==id)||{};showModal(id?'Edit Anime':'Add Anime',`<form id="animeForm"><div class="field"><label>Title *</label><input id="f_title" required value="${esc(x.title||'')}"></div><div class="field"><label>Description</label><textarea id="f_desc">${esc(x.description||'')}</textarea></div><div class="two"><div class="field"><label>Status</label><select id="f_status"><option value="ongoing" ${x.status==='ongoing'?'selected':''}>ongoing</option><option value="completed" ${x.status==='completed'?'selected':''}>completed</option><option value="upcoming" ${x.status==='upcoming'?'selected':''}>upcoming</option></select></div><div class="field"><label>Thumbnail URL</label><input id="f_thumb" value="${esc(x.thumbnail_url||'')}"></div></div><div class="field"><label>Banner URL</label><input id="f_banner" value="${esc(x.banner_url||'')}"></div><button class="btn">Save Anime</button></form>`);$('animeForm').onsubmit=async e=>{e.preventDefault();const payload={title:$('f_title').value.trim(),description:$('f_desc').value.trim(),status:$('f_status').value,thumbnail_url:$('f_thumb').value.trim(),banner_url:$('f_banner').value.trim()};try{const q=id?db.from('anime').update(payload).eq('id',id):db.from('anime').insert(payload);const {error}=await q;if(error)throw error;closeModal();await loadAll()}catch(err){alert(err.message)}}}
+async function delAnime(id){if(!confirm('Delete this anime? Its seasons/episodes must be removed by your database foreign-key rules.'))return;try{const {error}=await db.from('anime').delete().eq('id',id);if(error)throw error;await loadAll()}catch(e){alert(e.message)}}
+function openSeason(id){const x=seasonList.find(s=>s.id==id)||{};if(!animeList.length){alert('Add an anime first.');return}showModal(id?'Edit Season':'Add Season',`<form id="seasonForm"><div class="field"><label>Anime *</label><select id="s_anime" required>${animeOptions(x.anime_id||animeList[0].id)}</select></div><div class="two"><div class="field"><label>Season Number *</label><input id="s_num" type="number" min="1" required value="${esc(x.season_number||1)}"></div><div class="field"><label>Season Title</label><input id="s_title" value="${esc(x.title||'')}"></div></div><button class="btn">Save Season</button></form>`);$('seasonForm').onsubmit=async e=>{e.preventDefault();const payload={anime_id:Number($('s_anime').value),season_number:Number($('s_num').value),title:$('s_title').value.trim()};try{const q=id?db.from('seasons').update(payload).eq('id',id):db.from('seasons').insert(payload);const {error}=await q;if(error)throw error;closeModal();await loadAll()}catch(err){alert(err.message)}}}
+async function delSeason(id){if(!confirm('Delete this season?'))return;try{const {error}=await db.from('seasons').delete().eq('id',id);if(error)throw error;await loadAll()}catch(e){alert(e.message)}}
+function openEpisode(id){const x=episodeList.find(e=>e.id==id)||{};if(!animeList.length){alert('Add an anime first.');return}const defaultAnime=x.anime_id||animeList[0].id;const seasons=seasonOptions(defaultAnime,x.season_id);showModal(id?'Edit Episode':'Add Episode',`<form id="episodeForm"><div class="field"><label>Anime *</label><select id="e_anime" required>${animeOptions(defaultAnime)}</select></div><div class="field"><label>Season *</label><select id="e_season" required>${seasons||'<option value="">Add a season first</option>'}</select></div><div class="two"><div class="field"><label>Episode Number *</label><input id="e_num" type="number" min="1" required value="${esc(x.episode_number||1)}"></div><div class="field"><label>Title</label><input id="e_title" value="${esc(x.title||'')}"></div></div><div class="field"><label>Description</label><textarea id="e_desc">${esc(x.description||'')}</textarea></div><div class="field"><label>Video URL</label><input id="e_video" placeholder="https://..." value="${esc(x.video_url||'')}"></div><div class="field"><label>Thumbnail URL</label><input id="e_thumb" value="${esc(x.thumbnail_url||'')}"></div><div class="two"><div class="field"><label>Duration</label><input id="e_duration" value="${esc(x.duration||'')}"></div><div class="field"><label>Published</label><select id="e_published"><option value="false" ${!x.published?'selected':''}>Draft</option><option value="true" ${x.published?'selected':''}>Published</option></select></div></div><button class="btn">Save Episode</button></form>`);$('e_anime').onchange=()=>{$('e_season').innerHTML=seasonOptions($('e_anime').value,'')||'<option value="">Add a season first</option>'};$('episodeForm').onsubmit=async e=>{e.preventDefault();if(!$('e_season').value){alert('Please add/select a season first.');return}const payload={anime_id:Number($('e_anime').value),season_id:Number($('e_season').value),episode_number:Number($('e_num').value),title:$('e_title').value.trim(),description:$('e_desc').value.trim(),video_url:$('e_video').value.trim(),thumbnail_url:$('e_thumb').value.trim(),duration:$('e_duration').value.trim(),published:$('e_published').value==='true'};try{const q=id?db.from('episodes').update(payload).eq('id',id):db.from('episodes').insert(payload);const {error}=await q;if(error)throw error;closeModal();await loadAll()}catch(err){alert(err.message)}}}
+async function delEpisode(id){if(!confirm('Delete this episode?'))return;try{const {error}=await db.from('episodes').delete().eq('id',id);if(error)throw error;await loadAll()}catch(e){alert(e.message)}}
+db.auth.onAuthStateChange(event=>{if(event==='SIGNED_OUT')location.reload()});
+checkConnection();boot();
+</script>
+</body>
+</html>
